@@ -57,7 +57,18 @@ public class DriveCommands {
                         // Apply deadband
                         double linearMagnitude = MathUtil.applyDeadband(
                                         Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()), DEADBAND);
-                        Rotation2d linearDirection = new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+                                        double x = xSupplier.getAsDouble();
+                                        double y = ySupplier.getAsDouble();
+                                        Rotation2d linearDirection;
+                                        
+                                        if (linearMagnitude > 1e-6) {
+                                            // Safe to construct Rotation2d
+                                            linearDirection = new Rotation2d(x, y);
+                                        } else {
+                                            // Default to 0 angle or last heading
+                                            linearDirection = new Rotation2d(); // equivalent to 0 radians
+                                        }
+                                        
                         double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
                         // Square values

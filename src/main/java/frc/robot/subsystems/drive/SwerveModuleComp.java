@@ -131,9 +131,7 @@ public class SwerveModuleComp implements ModuleIO {
     turnRelativeEncoder.setPosition(0.0);
     sparkConfig.encoder.apply(encoderConfig);
 
-    turnSparkMax.setPeriodicFrameTimeout(20); // May need to adjust, this value can cause CAN timeout
-
-    turnSparkMax.setCANTimeout(0);
+    turnSparkMax.setPeriodicFrameTimeout(100); // May need to adjust, this value can cause CAN timeout
 
     // Initialize CANCoder Config
     cancoder.getConfigurator().apply(new CANcoderConfiguration());
