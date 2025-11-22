@@ -4,10 +4,11 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.servohub.ServoHub.ResetMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -31,6 +32,10 @@ import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class SwerveModule implements ModuleIO {
   // Can bus 
@@ -50,11 +55,11 @@ public class SwerveModule implements ModuleIO {
   private final CANcoder cancoder;
 
   // Position/Velocity
-  private final StatusSignal<Double> drivePosition;
-  private final StatusSignal<Double> driveVelocity;
-  private final StatusSignal<Double> driveAppliedVolts;
-  private final StatusSignal<Double> driveCurrent;
-  private final StatusSignal<Double> turnAbsolutePosition;
+  private final StatusSignal<Angle> drivePosition;
+  private final StatusSignal<AngularVelocity> driveVelocity;
+  private final StatusSignal<Voltage> driveAppliedVolts;
+  private final StatusSignal<Current> driveCurrent;
+  private final StatusSignal<Angle> turnAbsolutePosition;
   
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
@@ -135,7 +140,7 @@ public class SwerveModule implements ModuleIO {
     
 
     drivePositionQueue = SparkMaxOdometryThread.getInstance()
-      .registerSignal(() -> driveTalon.getPosition().getValue().in(Degrees));
+      .registerSignal(() -> drivePosition.getValue().in(Degrees));
     turnPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(turnRelativeEncoder::getPosition);
     BaseStatusSignal.setUpdateFrequencyForAll(
       Module.ODOMETRY_FREQUENCY, drivePosition); // Required for odometry, use faster rate
@@ -191,7 +196,7 @@ public class SwerveModule implements ModuleIO {
 
   @Override
   public void setDriveVoltage(double volts) {
-    driveTalon.setControl(new VoltageOut(volts, true, false, false, false));
+    driveTalon.setControl(new VoltageOut(volts));
   }
 
   @Override
