@@ -11,14 +11,6 @@ import com.revrobotics.servohub.ServoHub.ResetMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.Unit;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
-
-import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.Queue;
 
@@ -41,7 +33,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class SwerveModule implements ModuleIO {
-  // Can bus
+  // Can bus 
   public static final String CANbusName = "Lucas";
 
   // Gear ratios for Swerve XS, adjust as necessary
@@ -54,22 +46,24 @@ public class SwerveModule implements ModuleIO {
   SparkBaseConfig sparkConfig;
 
   // Encoder Objects
-  private RelativeEncoder turnRelativeEncoder;
+  private final RelativeEncoder turnRelativeEncoder;
   private final CANcoder cancoder;
 
   // Position/Velocity
-  private final StatusSignal<Angle> drivePosition;
-  private final StatusSignal<AngularVelocity> driveVelocity;
-  private final StatusSignal<Voltage> driveAppliedVolts;
-  private final StatusSignal<Current> driveCurrent;
-  private final StatusSignal<Angle> turnAbsolutePosition;
-
+  private final StatusSignal<Double> drivePosition;
+  private final StatusSignal<Double> driveVelocity;
+  private final StatusSignal<Double> driveAppliedVolts;
+  private final StatusSignal<Double> driveCurrent;
+  private final StatusSignal<Double> turnAbsolutePosition;
+  
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
 
   private final boolean isTurnMotorInverted = false;
   private final Rotation2d absoluteEncoderOffset;
+
+  
 
   public SwerveModule(int index) {
     switch (index) {
@@ -100,7 +94,6 @@ public class SwerveModule implements ModuleIO {
       default:
         throw new RuntimeException("Invalid module index");
     }
-    turnRelativeEncoder = turnSparkMax.getEncoder();
 
     // Initialize TalonFX Config
     timestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
@@ -113,10 +106,12 @@ public class SwerveModule implements ModuleIO {
 
     // Initialize SparkMax Config
     sparkConfig = new SparkMaxConfig()
-        .inverted(isTurnMotorInverted)
-        .smartCurrentLimit(30)
-        .voltageCompensation(12.0);
+      .inverted(isTurnMotorInverted)
+      .smartCurrentLimit(30)
+      .voltageCompensation(12.0);
     turnSparkMax.setCANTimeout(250);
+
+    turnRelativeEncoder = turnSparkMax.getEncoder();
 
     EncoderConfig encoderConfig = new EncoderConfig();
     encoderConfig.uvwMeasurementPeriod(10);
@@ -137,12 +132,13 @@ public class SwerveModule implements ModuleIO {
     driveVelocity = driveTalon.getVelocity();
     driveAppliedVolts = driveTalon.getMotorVoltage();
     driveCurrent = driveTalon.getStatorCurrent();
+    
 
     drivePositionQueue = SparkMaxOdometryThread.getInstance()
-        .registerSignal(() -> driveTalon.getPosition().getValue().in(Degrees));
+      .registerSignal(() -> driveTalon.getPosition().getValue().in(Degrees));
     turnPositionQueue = SparkMaxOdometryThread.getInstance().registerSignal(turnRelativeEncoder::getPosition);
     BaseStatusSignal.setUpdateFrequencyForAll(
-        Module.ODOMETRY_FREQUENCY, drivePosition); // Required for odometry, use faster rate
+      Module.ODOMETRY_FREQUENCY, drivePosition); // Required for odometry, use faster rate
     BaseStatusSignal.setUpdateFrequencyForAll(
         250.0,
         driveVelocity,
@@ -177,14 +173,17 @@ public class SwerveModule implements ModuleIO {
     inputs.turnAppliedVolts = turnSparkMax.getAppliedOutput() * turnSparkMax.getBusVoltage();
     inputs.turnCurrentAmps = new double[] { turnSparkMax.getOutputCurrent() };
 
-    inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-    inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
-        .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
-        .toArray();
-    inputs.odometryTurnPositions = turnPositionQueue.stream()
-        .map((Double value) -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
-        .toArray(Rotation2d[]::new);
-
+    inputs.odometryTimestamps =
+        timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryDrivePositionsRad =
+        drivePositionQueue.stream()
+            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
+            .toArray();
+    inputs.odometryTurnPositions =
+      turnPositionQueue.stream()
+          .map((Double value) -> Rotation2d.fromRotations(value / TURN_GEAR_RATIO))
+          .toArray(Rotation2d[]::new);
+        
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();
@@ -192,7 +191,7 @@ public class SwerveModule implements ModuleIO {
 
   @Override
   public void setDriveVoltage(double volts) {
-    driveTalon.setControl(new VoltageOut(volts));
+    driveTalon.setControl(new VoltageOut(volts, true, false, false, false));
   }
 
   @Override
