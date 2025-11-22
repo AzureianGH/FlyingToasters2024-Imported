@@ -158,7 +158,7 @@ public class SwerveModuleComp implements ModuleIO {
         turnAbsolutePosition);
     driveTalon.optimizeBusUtilization();
 
-    turnSparkMax.configure(sparkConfig, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    turnSparkMax.configure(sparkConfig, com.revrobotics.spark.SparkBase.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override
@@ -223,6 +223,6 @@ public class SwerveModuleComp implements ModuleIO {
   @Override
   public void setTurnBrakeMode(boolean enable) {
     sparkConfig.idleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
-    turnSparkMax.configure(sparkConfig, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    turnSparkMax.configure(sparkConfig, com.revrobotics.spark.SparkBase.ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   }
 }

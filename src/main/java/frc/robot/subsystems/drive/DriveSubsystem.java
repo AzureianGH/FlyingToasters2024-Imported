@@ -46,9 +46,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.controllers.AimController;
-import frc.robot.controllers.LobController;
-import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.drive.GyroIO.GyroIOInputs;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
@@ -85,11 +82,6 @@ public class DriveSubsystem extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  private Limelight limelight = new Limelight();
-
-  private AimController aimController = null;
-  private LobController lobController = null;
-
   public DriveSubsystem(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -105,7 +97,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Start threads (no-op for each if no signals have been created)
     SparkMaxOdometryThread.getInstance().start();
 
-    PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
+    //PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
@@ -187,24 +179,6 @@ public class DriveSubsystem extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
-
-
-    if (aimController == null) {  
-    boolean doRejectUpdate = false;
-    LimelightHelpers.SetRobotOrientation("limelight", poseEstimator.getEstimatedPosition().getRotation().getDegrees(),getGyroRate(),0,0,0,0);
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-    if(Math.abs(getGyroRate()) >= 720){
-      doRejectUpdate = true;
-    }
-    if(mt2.tagCount == 0){
-      doRejectUpdate = true;
-    }
-    if(!doRejectUpdate){
-      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.9,.9,9999999));
-      poseEstimator.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-    }
-  
-  }
   
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
@@ -330,46 +304,6 @@ public class DriveSubsystem extends SubsystemBase {
     };
   }
 
-  /** Enable auto aiming on drive */
-  public void setAimGoal() {
-    aimController = new AimController(poseEstimator);
-  }
-
-  public void setLobGoal() {
-    lobController = new LobController(poseEstimator);
-  }
-
-  public void clearLobGoal() {
-    lobController = null;
-  }
-
-  /** Disable auto aiming on drive */
-  public void clearAimGoal() {
-    aimController = null;
-  }
-
-  public boolean getAimController() {
-    return aimController != null;
-  }
-
-  public boolean getLobController() {
-    return lobController != null;
-  }
-
-  public double updateAimController(Limelight m_Limelight) {
-    return aimController.update(m_Limelight);
-  }
-
-  public boolean isAimControllerDone(Limelight m_Limelight) {
-    Logger.recordOutput("aimController/threshold", aimController.threshold(m_Limelight));
-      return aimController.threshold(m_Limelight);
-  }
-
-  public double updateLobController() {
-    
-    return lobController.update();
-  }
-
   public SwerveDrivePoseEstimator getPoseEstimator () {
     return poseEstimator;
   }
@@ -384,18 +318,6 @@ public class DriveSubsystem extends SubsystemBase {
       return null;
     }
   }
-
-  public Optional<Rotation2d> getRotationTargetOverride(){
-    // Some condition that should decide if we want to override rotation
-    if(autoAutoAim == true) {
-      Logger.recordOutput("AutoAutoAim/RobotSetRotation", limelight.getTargetRotation(getRotation()));
-        // Return an optional containing the rotation override (this should be a field relative rotation)
-        return Optional.of(limelight.getTargetRotation(getRotation()));
-    } else {
-        // return an empty optional when we don't want to override the path's rotation
-        return Optional.empty();
-    }
-}
 
   public void setAutoAutoAim(boolean setter) {
     if (setter == true) {

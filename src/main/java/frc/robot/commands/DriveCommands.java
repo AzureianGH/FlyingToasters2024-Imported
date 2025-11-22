@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import java.util.function.DoubleSupplier;
 
@@ -53,8 +52,7 @@ public class DriveCommands {
                         DriveSubsystem drive,
                         DoubleSupplier xSupplier,
                         DoubleSupplier ySupplier,
-                        DoubleSupplier omegaSupplier,
-                        Limelight m_Limelight) {
+                        DoubleSupplier omegaSupplier) {
                 return Commands.run(() -> {
                         // Apply deadband
                         double linearMagnitude = MathUtil.applyDeadband(
@@ -74,15 +72,6 @@ public class DriveCommands {
                         // Convert to field relative speeds & send command
                         boolean isFlipped = DriverStation.getAlliance().isPresent()
                                         && DriverStation.getAlliance().get() == Alliance.Red;
-                        // Auto aim steering takeover
-                        if (drive.getAimController()) {
-                                omega = drive.updateAimController(m_Limelight)
-                                                / drive.getMaxAngularSpeedRadPerSec();
-                        }
-                        if (drive.getLobController()) {
-                                omega = drive.updateLobController()
-                                                / drive.getMaxAngularSpeedRadPerSec();
-                        }
 
                         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
                                         linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
@@ -106,8 +95,7 @@ public class DriveCommands {
          * 
          */
         public static Command AutoAutoAim(
-                        DriveSubsystem drive,
-                        Limelight m_Limelight) {
+                        DriveSubsystem drive) {
 
                 return Commands.run(
                                 () -> {
@@ -117,9 +105,7 @@ public class DriveCommands {
                                         boolean isFlipped = DriverStation.getAlliance().isPresent()
                                                         && DriverStation.getAlliance().get() == Alliance.Red;
                                         // Auto aim steering takeover
-                                        omega = lime.calculate(m_Limelight.getAngleOffset().getRadians(), 0); // will
-                                                                                                              // get
-                                                                                                              // multiplied
+                                                                                             // multiplied
                                         // back later
 
                                         Logger.recordOutput("AutoAim/Omega", omega);
