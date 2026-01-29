@@ -5,6 +5,10 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.Flywheels;
+import frc.robot.subsystems.Flywheels;
+import frc.robot.subsystems.Flywheels;
+import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.commands.DriveCommands;
@@ -43,12 +47,14 @@ public class RobotContainer {
     // Subsystems
     
     public final DriveSubsystem m_robotDrive;
+    public final Flywheels flywheels;
     //private final LEDSubsystem m_LEDSubsystem;
     // Controller
     private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   
     /** The container for the robot. Contains subsystems, OI devices, and commands.*/
     public RobotContainer() {
+        flywheels = new Flywheels();
         //Hardware or SIM?
         switch (Constants.currentMode) {
         case REAL:
@@ -60,6 +66,7 @@ public class RobotContainer {
                 new SwerveModuleComp(1),
                 new SwerveModuleComp(2),
                 new SwerveModuleComp(3));
+        
         // Configure AutoBuilder for holonomic (swerve) drive
         break;
 
@@ -116,7 +123,8 @@ public class RobotContainer {
       
       m_driverController.start().onTrue(Commands.runOnce(() -> m_robotDrive.setPose(new Pose2d(m_robotDrive.getPose().getTranslation(), new Rotation2d())),m_robotDrive)
                 .ignoringDisable(true));
-
+      m_driverController.b().onTrue(Commands.run(() -> flywheels.setSpeed(m_driverController.getLeftTriggerAxis())));
+      m_driverController.a().onTrue(Commands.runOnce(() -> flywheels.setFeed(.5))).onFalse(Commands.runOnce(() -> flywheels.setFeed(0)));
         
   }   
   public Command getAutonomousCommand() {
@@ -125,5 +133,9 @@ public class RobotContainer {
        
   public Command getAutoCommand(String autoName) {
       return new PathPlannerAuto(autoName);
+  }
+
+  public Command periodic() {
+    return Commands.runOnce(() -> flywheels.setSpeed(m_driverController.getLeftTriggerAxis()));
   }
 }
