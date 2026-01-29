@@ -4,10 +4,8 @@
 
 package frc.robot;
 
+import frc.robot.Constants.FlywheelDirection;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.Flywheels;
-import frc.robot.subsystems.Flywheels;
-import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.Flywheels;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIO;
@@ -123,8 +121,21 @@ public class RobotContainer {
       
       m_driverController.start().onTrue(Commands.runOnce(() -> m_robotDrive.setPose(new Pose2d(m_robotDrive.getPose().getTranslation(), new Rotation2d())),m_robotDrive)
                 .ignoringDisable(true));
-      m_driverController.b().onTrue(Commands.run(() -> flywheels.setSpeed(m_driverController.getLeftTriggerAxis())));
-      m_driverController.a().onTrue(Commands.runOnce(() -> flywheels.setFeed(.5))).onFalse(Commands.runOnce(() -> flywheels.setFeed(0)));
+      
+      // Set flywheels to intake/outtake
+      m_driverController.leftBumper().onTrue(Commands.runOnce(() -> flywheels.setDirection(FlywheelDirection.OUTTAKE)));
+      m_driverController.rightBumper().onTrue(Commands.runOnce(() -> flywheels.setDirection(FlywheelDirection.INTAKE)));
+
+      // Run flywheels
+      m_driverController.b().onTrue(Commands.run(() -> flywheels.setSpeed(m_driverController.getLeftTriggerAxis())))
+        .onFalse(Commands.runOnce(() -> flywheels.setSpeed(0)));
+      
+      // Cycle flywheel speed
+      m_driverController.x().onTrue(Commands.runOnce(() -> flywheels.increaseSpeed(0.2)));
+
+      // Feed
+      m_driverController.a().onTrue(Commands.runOnce(() -> flywheels.setFeed(.5)))
+        .onFalse(Commands.runOnce(() -> flywheels.setFeed(0)));
         
   }   
   public Command getAutonomousCommand() {
@@ -133,9 +144,5 @@ public class RobotContainer {
        
   public Command getAutoCommand(String autoName) {
       return new PathPlannerAuto(autoName);
-  }
-
-  public Command periodic() {
-    return Commands.runOnce(() -> flywheels.setSpeed(m_driverController.getLeftTriggerAxis()));
   }
 }

@@ -18,6 +18,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants;
 
 import static edu.wpi.first.units.Units.Degrees;
 
@@ -39,8 +40,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
 
 public class SwerveModuleComp implements ModuleIO {
-  // Can bus
-  public static final String CANbusName = "Lucas";
 
   // Gear ratios for Swerve XS, adjust as necessary
   private static final double DRIVE_GEAR_RATIO = 4.13;
@@ -72,30 +71,30 @@ public class SwerveModuleComp implements ModuleIO {
   public SwerveModuleComp(int index) {
     switch (index) {
       case 0: // Front Left
-        driveTalon = new TalonFX(13, CANbusName);
+        driveTalon = new TalonFX(13, Constants.lowerCANBusName);
         turnSparkMax = new SparkMax(20, MotorType.kBrushless);
-        cancoder = new CANcoder(17, CANbusName);
+        cancoder = new CANcoder(17, Constants.lowerCANBusName);
         absoluteEncoderOffset = new Rotation2d(Units.rotationsToRadians(0.463623));// 0.449463//0.444092//-0.050537//-1.00927
                                                    // // MUST BE CALIBRATED
         break;
       case 1: // Front Right
-        driveTalon = new TalonFX(10, CANbusName);
+        driveTalon = new TalonFX(10, Constants.lowerCANBusName);
         turnSparkMax = new SparkMax(21, MotorType.kBrushless);
-        cancoder = new CANcoder(15, CANbusName);
+        cancoder = new CANcoder(15, Constants.lowerCANBusName);
         absoluteEncoderOffset = new Rotation2d(Units.rotationsToRadians(-0.422607));// -0.419434//0.073486//-0.888184 //
                                                                                     // MUST BE CALIBRATED
         break;
       case 2: // Rear Left
-        driveTalon = new TalonFX(11, CANbusName);
+        driveTalon = new TalonFX(11, Constants.lowerCANBusName);
         turnSparkMax = new SparkMax(22, MotorType.kBrushless);
-        cancoder = new CANcoder(16, CANbusName);
+        cancoder = new CANcoder(16, Constants.lowerCANBusName);
         absoluteEncoderOffset = new Rotation2d(Units.rotationsToRadians(-0.122559));// 0.007080//-0.999512 // MUST BE
                                                                                     // CALIBRATED
         break;
       case 3: // Rear Right
-        driveTalon = new TalonFX(12, CANbusName);
+        driveTalon = new TalonFX(12, Constants.lowerCANBusName);
         turnSparkMax = new SparkMax(19, MotorType.kBrushless);
-        cancoder = new CANcoder(18, CANbusName);
+        cancoder = new CANcoder(18, Constants.lowerCANBusName);
         absoluteEncoderOffset = new Rotation2d(Units.rotationsToRadians(-0.003906)); // -0.003662//-0.006836
                                                                                      // //-1.496826// MUST BE CALIBRATED
         break;
