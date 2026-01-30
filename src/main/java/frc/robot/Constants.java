@@ -34,4 +34,9 @@ public final class Constants {
     REPLAY
   }
 
+  public static enum FlywheelDirection {
+    OUTTAKE,
+    INTAKE
+  }
+
 }
